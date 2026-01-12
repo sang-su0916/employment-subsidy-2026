@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2026 고용지원금 최적화 시스템</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .subtitle {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .form-section {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+        }
+
+        .form-section h2 {
+            color: #2a5298;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 40px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .results {
+            display: none;
+        }
+
+        .results.show {
+            display: block;
+        }
+
+        .recommendation {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+        }
+
+        .recommendation h2 {
+            font-size: 2em;
+            margin-bottom: 15px;
+        }
+
+        .amount {
+            font-size: 3em;
+            font-weight: 700;
+            margin: 20px 0;
+        }
+
+        .comparison-table {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            margin-bottom: 30px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: #2a5298;
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        td {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        tr:hover {
+            background: #f8f9fa;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: 600;
+        }
+
+        .status-eligible {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-not-eligible {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .status-recommended {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .details-section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+        }
+
+        .details-section h3 {
+            color: #2a5298;
+            margin-bottom: 15px;
+            font-size: 1.4em;
+        }
+
+        .detail-item {
+            padding: 10px 0;
+            border-bottom: 1px dashed #ddd;
+        }
+
+        .detail-item:last-child {
+            border-bottom: none;
+        }
+
+        .print-btn {
+            background: #6c757d;
+            margin-top: 10px;
+        }
+
+        @media print {
+            body {
+                background: white;
+            }
+            .container {
+                box-shadow: none;
+            }
+            .btn {
+                display: none;
+            }
+            .form-section {
+                display: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.8em;
+            }
+            .content {
+                padding: 20px;
+            }
+            .form-section {
+                padding: 20px;
+            }
+            .amount {
+                font-size: 2em;
+            }
+        }
+
+        .info-text {
+            background: #e7f3ff;
+            padding: 15px;
+            border-left: 4px solid #2a5298;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎯 2026 고용지원금 최적화 시스템</h1>
+            <p class="subtitle">기업에 가장 유리한 고용지원금을 자동으로 찾아드립니다</p>
+            <div style="margin-top: 15px; font-size: 0.9em; opacity: 0.8;">
+                <span id="dataVersion">데이터 로딩 중...</span>
+            </div>
+        </header>
+
+        <div class="content">
+            <!-- Input Form -->
+            <div class="form-section" id="inputForm">
+                <h2>📋 기업 정보 입력</h2>
+                
+                <div class="info-text">
+                    <strong>안내:</strong> 고용보험 및 4대보험 서류를 참고하여 정확한 정보를 입력해주세요. 
+                    중복지급이 불가능한 지원금들을 자동으로 분석하여 최대 혜택을 받을 수 있는 방안을 추천해드립니다.
+                </div>
+
+                <form id="subsidyForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="businessNumber">사업자등록번호</label>
+                            <input type="text" id="businessNumber" placeholder="000-00-00000" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="companyName">기업명</label>
+                            <input type="text" id="companyName" placeholder="주식회사 OOO" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="industry">업종</label>
+                            <select id="industry" required>
+                                <option value="">선택하세요</option>
+                                <option value="제조업">제조업</option>
+                                <option value="건설업">건설업</option>
+                                <option value="도소매업">도소매업</option>
+                                <option value="숙박음식업">숙박음식업</option>
+                                <option value="정보통신업">정보통신업</option>
+                                <option value="전문과학기술업">전문과학기술업</option>
+                                <option value="사업서비스업">사업서비스업</option>
+                                <option value="기타">기타</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="companySize">기업 규모</label>
+                            <select id="companySize" required>
+                                <option value="">선택하세요</option>
+                                <option value="5인미만">5인 미만</option>
+                                <option value="5인이상30인미만">5인 이상 30인 미만</option>
+                                <option value="30인이상">30인 이상</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="totalEmployees">전체 근로자 수</label>
+                            <input type="number" id="totalEmployees" placeholder="10" min="1" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="insuredEmployees">고용보험 피보험자 수</label>
+                            <input type="number" id="insuredEmployees" placeholder="8" min="0" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="youthEmployees">청년근로자 수 (15-34세)</label>
+                            <input type="number" id="youthEmployees" placeholder="3" min="0">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="seniorEmployees">고령자 수 (60세 이상)</label>
+                            <input type="number" id="seniorEmployees" placeholder="1" min="0">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="disabledEmployees">장애인 근로자 수</label>
+                            <input type="number" id="disabledEmployees" placeholder="0" min="0">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="avgWage">평균 월급여 (원)</label>
+                            <input type="number" id="avgWage" placeholder="3000000" min="0" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="newHires">최근 3개월 신규 채용 인원</label>
+                            <input type="number" id="newHires" placeholder="2" min="0">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="employmentPeriod">평균 고용 유지 기간 (개월)</label>
+                            <input type="number" id="employmentPeriod" placeholder="12" min="0">
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn">🔍 최적 지원금 찾기</button>
+                </form>
+            </div>
+
+            <!-- Loading -->
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>분석 중입니다...</p>
+            </div>
+
+            <!-- Results -->
+            <div class="results" id="results">
+                <!-- Recommendation will be inserted here -->
+            </div>
+        </div>
+    </div>
+
+    <script src="src/data/subsidies.js"></script>
+    <script src="src/utils/data-loader.js"></script>
+    <script src="src/logic/eligibility.js"></script>
+    <script src="src/logic/optimizer.js"></script>
+    <script src="src/ui/renderer.js"></script>
+    <script src="src/utils/validators.js"></script>
+    <script src="src/main.js"></script>
+    <script>
+        async function initializeApp() {
+            try {
+                await loadSubsidyData();
+                const versionInfo = getDataVersion();
+                const versionEl = document.getElementById('dataVersion');
+                versionEl.textContent = `데이터 버전: ${versionInfo.version} (${versionInfo.lastUpdated}) - 웹 버전`;
+            } catch (error) {
+                console.error('데이터 로드 실패:', error);
+                document.getElementById('dataVersion').textContent = '⚠️ 데이터 로드 실패';
+                alert('데이터를 로드할 수 없습니다. data/subsidies-2026.json 파일을 확인해주세요.');
+            }
+        }
+        
+        initializeApp();
+    </script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+{
+  "totalEmployees": 45,
+  "region": "충북",
+  "regionType": "일반비수도권",
+  "industry": "제조업",
+  "youthEmployees": 5,
+  "seniorEmployees": 3,
+  "middleAgedEmployees": 2,
+  "disabledEmployees": 1,
+  "severeDisabledEmployees": 0,
+  "hasSevereDisabled": false,
+  "childcareWorkers": 2,
+  "nonRegularEmployees": 0,
+  "wageIncrease": 0,
+  "hasRetirementAge": true
+}

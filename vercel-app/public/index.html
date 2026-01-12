@@ -1,0 +1,1094 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2026 고용지원금 분석 시스템</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+            font-size: 2rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+        }
+        .card h2 {
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+        }
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        label {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        label span {
+            font-weight: 600;
+            color: #555;
+            font-size: 0.9rem;
+        }
+        select, input {
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+        select:focus, input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .btn-secondary {
+            background: #f5f5f5;
+            color: #333;
+        }
+        .btn-success {
+            background: #34a853;
+            color: white;
+        }
+        .btn-danger {
+            background: #ea4335;
+            color: white;
+        }
+        .hidden { display: none; }
+        .results-summary {
+            text-align: center;
+            padding: 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            color: white;
+            margin-bottom: 20px;
+        }
+        .results-summary .amount {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        .subsidy-list { list-style: none; }
+        .subsidy-item {
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border-left: 4px solid;
+        }
+        .subsidy-item.eligible {
+            background: #e6f4ea;
+            border-color: #34a853;
+        }
+        .subsidy-item.not-eligible {
+            background: #fce8e6;
+            border-color: #ea4335;
+        }
+        .subsidy-item h4 { margin-bottom: 5px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+        .subsidy-item p { color: #666; font-size: 0.9rem; }
+        .verification-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .badge-confirmed {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .badge-pending {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeeba;
+        }
+        .verification-source {
+            font-size: 0.8rem;
+            color: #888;
+            margin-top: 5px;
+            font-style: italic;
+        }
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin: 20px 0;
+        }
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+        }
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        @media (max-width: 768px) {
+            .form-grid { grid-template-columns: 1fr; }
+            h1 { font-size: 1.5rem; }
+            .results-summary .amount { font-size: 1.8rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>2026 고용지원금 분석 시스템</h1>
+
+        <div class="card">
+            <h2>기업 정보 입력</h2>
+            <form id="companyForm">
+                <div class="form-grid">
+                    <label>
+                        <span>지역</span>
+                        <select id="region" required>
+                            <option value="">선택하세요</option>
+                            <option value="서울">서울</option>
+                            <option value="경기">경기</option>
+                            <option value="인천">인천</option>
+                            <option value="부산">부산</option>
+                            <option value="대구">대구</option>
+                            <option value="광주">광주</option>
+                            <option value="대전">대전</option>
+                            <option value="울산">울산</option>
+                            <option value="세종">세종</option>
+                            <option value="강원">강원</option>
+                            <option value="충북">충북</option>
+                            <option value="충남">충남</option>
+                            <option value="전북">전북</option>
+                            <option value="전남">전남</option>
+                            <option value="경북">경북</option>
+                            <option value="경남">경남</option>
+                            <option value="제주">제주</option>
+                        </select>
+                    </label>
+                    <label>
+                        <span>지역 유형</span>
+                        <select id="regionType" required>
+                            <option value="수도권">수도권</option>
+                            <option value="비수도권">비수도권</option>
+                        </select>
+                    </label>
+                    <label>
+                        <span>업종</span>
+                        <select id="industry" required>
+                            <option value="">선택하세요</option>
+                            <option value="제조업">제조업</option>
+                            <option value="건설업">건설업</option>
+                            <option value="도소매업">도소매업</option>
+                            <option value="숙박음식업">숙박음식업</option>
+                            <option value="정보통신업">정보통신업</option>
+                            <option value="전문과학기술업">전문과학기술업</option>
+                            <option value="사업서비스업">사업서비스업</option>
+                            <option value="농업/임업/어업">농업/임업/어업</option>
+                            <option value="광업">광업</option>
+                            <option value="전기/가스/수도">전기/가스/수도</option>
+                            <option value="운수/창고업">운수/창고업</option>
+                            <option value="금융/보험업">금융/보험업</option>
+                            <option value="부동산업">부동산업</option>
+                            <option value="교육서비스업">교육서비스업</option>
+                            <option value="보건/사회복지">보건/사회복지</option>
+                            <option value="예술/스포츠">예술/스포츠</option>
+                            <option value="기타">기타</option>
+                        </select>
+                    </label>
+                    <label>
+                        <span>총 직원수</span>
+                        <input type="number" id="totalEmployees" min="1" value="10" required>
+                    </label>
+                    <label>
+                        <span>청년 (15~34세)</span>
+                        <input type="number" id="youthEmployees" min="0" value="0">
+                    </label>
+                    <label>
+                        <span>중장년 (50~59세)</span>
+                        <input type="number" id="middleAgedEmployees" min="0" value="0">
+                    </label>
+                    <label>
+                        <span>고령자 (60세+)</span>
+                        <input type="number" id="seniorEmployees" min="0" value="0">
+                    </label>
+                    <label>
+                        <span>장애인</span>
+                        <input type="number" id="disabledEmployees" min="0" value="0">
+                    </label>
+                    <label>
+                        <span>중증장애인</span>
+                        <input type="number" id="severeDisabledEmployees" min="0" value="0">
+                    </label>
+                    <label>
+                        <span>육아기 근로자</span>
+                        <input type="number" id="childcareWorkers" min="0" value="0">
+                    </label>
+                    <label>
+                        <span>비정규직 (전환 예정)</span>
+                        <input type="number" id="nonRegularEmployees" min="0" value="0">
+                    </label>
+                    <label>
+                        <span>정년 규정 유무</span>
+                        <select id="hasRetirementAge">
+                            <option value="false">없음</option>
+                            <option value="true">있음</option>
+                        </select>
+                    </label>
+                </div>
+                <div class="btn-group">
+                    <button type="submit" class="btn-primary">지원금 분석하기</button>
+                    <button type="reset" class="btn-secondary">초기화</button>
+                </div>
+            </form>
+        </div>
+
+        <div id="results" class="hidden">
+            <div class="card">
+                <div class="results-summary">
+                    <h3>총 예상 수급액</h3>
+                    <div class="amount" id="totalAmount">0원</div>
+                    <p>수급 가능 지원금 <span id="eligibleCount">0</span>개</p>
+                </div>
+
+                <div class="btn-group" style="justify-content: center;">
+                    <button id="exportExcel" class="btn-success">Excel 다운로드</button>
+                    <button id="exportPdf" class="btn-danger">PDF 다운로드</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>수급 가능 지원금</h2>
+                <ul class="subsidy-list" id="eligibleList"></ul>
+            </div>
+
+            <div class="card">
+                <h2>지원금 비교</h2>
+                <div class="chart-container">
+                    <canvas id="comparisonChart"></canvas>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>수급 불가 지원금</h2>
+                <ul class="subsidy-list" id="notEligibleList"></ul>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        let currentResults = null;
+        let subsidyData = null;
+        let chart = null;
+
+        // 지원금 데이터 로드
+        async function loadSubsidyData() {
+            const response = await fetch('/subsidies-2026.json');
+            subsidyData = await response.json();
+        }
+
+        // 초기화
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadSubsidyData();
+            setupEventListeners();
+        });
+
+        function setupEventListeners() {
+            document.getElementById('companyForm').addEventListener('submit', handleSubmit);
+            document.getElementById('companyForm').addEventListener('reset', handleReset);
+            document.getElementById('exportExcel').addEventListener('click', exportExcel);
+            document.getElementById('exportPdf').addEventListener('click', exportPdf);
+
+            // 지역 선택 시 지역 유형 자동 설정
+            document.getElementById('region').addEventListener('change', (e) => {
+                const metro = ['서울', '경기', '인천'];
+                document.getElementById('regionType').value = metro.includes(e.target.value) ? '수도권' : '비수도권';
+            });
+        }
+
+        function handleReset() {
+            document.getElementById('results').classList.add('hidden');
+            currentResults = null;
+            if (chart) {
+                chart.destroy();
+                chart = null;
+            }
+        }
+
+        async function handleSubmit(e) {
+            e.preventDefault();
+
+            const companyData = {
+                region: document.getElementById('region').value,
+                regionType: document.getElementById('regionType').value,
+                industry: document.getElementById('industry').value,
+                totalEmployees: parseInt(document.getElementById('totalEmployees').value) || 0,
+                youthEmployees: parseInt(document.getElementById('youthEmployees').value) || 0,
+                middleAgedEmployees: parseInt(document.getElementById('middleAgedEmployees').value) || 0,
+                seniorEmployees: parseInt(document.getElementById('seniorEmployees').value) || 0,
+                disabledEmployees: parseInt(document.getElementById('disabledEmployees').value) || 0,
+                severeDisabledEmployees: parseInt(document.getElementById('severeDisabledEmployees').value) || 0,
+                childcareWorkers: parseInt(document.getElementById('childcareWorkers').value) || 0,
+                nonRegularEmployees: parseInt(document.getElementById('nonRegularEmployees').value) || 0,
+                hasRetirementAge: document.getElementById('hasRetirementAge').value === 'true'
+            };
+
+            const result = analyzeEligibility(companyData, subsidyData.subsidies);
+            currentResults = { companyData, ...result };
+            displayResults(currentResults);
+        }
+
+        function analyzeEligibility(company, subsidies) {
+            const eligible = [];
+            const notEligible = [];
+            const calculations = [];
+
+            for (const subsidy of subsidies) {
+                const check = checkEligibility(company, subsidy);
+                if (check.isEligible) {
+                    eligible.push({ subsidy, reasons: [] });
+                    const calc = calculateAmount(company, subsidy);
+                    calculations.push(calc);
+                } else {
+                    notEligible.push({ subsidy, reasons: check.reasons });
+                }
+            }
+
+            calculations.sort((a, b) => b.totalAmount - a.totalAmount);
+            const optimal = findOptimalCombination(calculations, subsidies);
+
+            return {
+                eligibility: { eligible, notEligible },
+                calculations,
+                optimal,
+                excludedByConflict: optimal.excluded || []
+            };
+        }
+
+        function checkEligibility(company, subsidy) {
+            const reasons = [];
+            const elig = subsidy.eligibility;
+
+            if (elig.minEmployees && company.totalEmployees < elig.minEmployees) {
+                reasons.push(`최소 ${elig.minEmployees}인 이상 필요 (현재 ${company.totalEmployees}인)`);
+            }
+            if (elig.maxEmployees && company.totalEmployees > elig.maxEmployees) {
+                reasons.push(`${elig.maxEmployees}인 이하 기업만 가능 (현재 ${company.totalEmployees}인)`);
+            }
+            if (elig.requiredEmployeeTypes && elig.requiredEmployeeTypes.length > 0) {
+                for (const type of elig.requiredEmployeeTypes) {
+                    if (type === '청년' && !company.youthEmployees) reasons.push('청년 근로자(15~34세)가 필요합니다');
+                    if (type === '고령자' && !company.seniorEmployees) reasons.push('고령자 근로자(60세+)가 필요합니다');
+                    if (type === '장애인' && !company.disabledEmployees && !company.severeDisabledEmployees) reasons.push('장애인 근로자가 필요합니다');
+                    if (type === '50세 이상 중장년' && !company.middleAgedEmployees && !company.seniorEmployees) reasons.push('50세 이상 중장년 근로자가 필요합니다');
+                }
+            }
+            if (elig.requiresRetirementAge && !company.hasRetirementAge) reasons.push('정년 규정이 있어야 합니다');
+            if (elig.requiresSevereDisabled && !company.severeDisabledEmployees) reasons.push('중증장애인 근로자가 필요합니다');
+            if (elig.targetIndustries && elig.targetIndustries.length > 0) {
+                const isMatch = elig.targetIndustries.some(ind => company.industry.includes(ind) || ind.includes(company.industry));
+                if (!isMatch) reasons.push(`대상 업종: ${elig.targetIndustries.join(', ')}`);
+            }
+            if (elig.forJobSeekers) reasons.push('구직자 대상 지원금 (기업 대상 아님)');
+
+            return { isEligible: reasons.length === 0, reasons };
+        }
+
+        function calculateAmount(company, subsidy) {
+            let totalAmount = 0;
+            let details = '';
+            const calc = subsidy.calculation;
+
+            switch (calc.type) {
+                case 'regional-differentiated-2026':
+                    const companyAmount = calc.company.amount * (company.youthEmployees || 1);
+                    let youthAmount = 0;
+                    const regionType = company.regionType || '수도권';
+                    if (calc.youth[regionType]) {
+                        youthAmount = calc.youth[regionType].totalAmount * (company.youthEmployees || 1);
+                    }
+                    totalAmount = companyAmount + youthAmount;
+                    details = `기업지원 ${(calc.company.amount / 10000).toLocaleString()}만원 × ${company.youthEmployees || 1}명`;
+                    break;
+                case 'regional-differentiated-quarterly':
+                    const isMetro = ['서울', '경기', '인천'].includes(company.region);
+                    const regionCalc = isMetro ? calc['수도권'] : calc['비수도권'];
+                    totalAmount = regionCalc.totalAmount * (company.seniorEmployees || 1);
+                    details = `${isMetro ? '수도권' : '비수도권'} 월 ${(regionCalc.monthlyAmount / 10000)}만원 × ${regionCalc.maxYears}년 × ${company.seniorEmployees || 1}명`;
+                    break;
+                case 'per-employee-monthly-by-gender':
+                    totalAmount = calc['중증남성'].totalAmount * (company.severeDisabledEmployees || 0);
+                    details = `중증장애인 ${company.severeDisabledEmployees || 0}명 × 월 ${(calc['중증남성'].monthlyAmount / 10000)}만원 × 12개월`;
+                    break;
+                case 'per-employee-monthly':
+                    // 지원금 종류에 따라 적용 대상 결정
+                    let targetCount = 1;
+                    let targetLabel = '근로자';
+
+                    if (subsidy.id === 'parental-10am-work-2026' || subsidy.id === 'work-life-balance-incentive-2026') {
+                        targetCount = company.childcareWorkers || 1;
+                        targetLabel = '육아기 근로자';
+                    } else if (subsidy.id === 'flexible-work-incentive-2026') {
+                        // 유연근무는 전체 직원 중 30% 한도
+                        targetCount = Math.min(Math.floor(company.totalEmployees * 0.3), 300) || 1;
+                        targetLabel = '유연근무 활용자';
+                    } else if (subsidy.id === 'work-life-balance-45-project-2026') {
+                        // 워라밸 4.5는 최대 50명
+                        targetCount = Math.min(company.totalEmployees, 50) || 1;
+                        targetLabel = '주4.5일 적용자';
+                    } else {
+                        targetCount = company.childcareWorkers || 1;
+                        targetLabel = '대상 근로자';
+                    }
+
+                    const monthlyAmt = calc.monthlyAmount || (calc.monthlyAmounts ? calc.monthlyAmounts['재택원격근무'] : 300000);
+                    const maxMonths = calc.maxMonths || 12;
+                    totalAmount = monthlyAmt * maxMonths * targetCount;
+                    details = `${targetLabel} ${targetCount}명 × 월 ${(monthlyAmt / 10000)}만원 × ${maxMonths}개월`;
+                    break;
+                case 'one-time':
+                    // 일·가정양립 환경개선 시스템구축비 등 1회성 지원
+                    totalAmount = calc.maxAmount || 0;
+                    details = calc.description || `최대 ${(totalAmount / 10000).toLocaleString()}만원 (1회)`;
+                    break;
+                case 'milestone-based':
+                    const middleAged = (company.middleAgedEmployees || 0) + (company.seniorEmployees || 0);
+                    totalAmount = calc.totalAmount * middleAged;
+                    details = `50세+ 중장년 ${middleAged}명 × ${(calc.totalAmount / 10000).toLocaleString()}만원`;
+                    break;
+                case 'company-size-differentiated':
+                    // 고용촉진장려금 - 기업 규모별 차등 지원
+                    const companyTypeCalc = calc['우선지원대상기업'] || calc['중견기업'];
+                    totalAmount = companyTypeCalc.totalAmount;
+                    details = `취업취약계층 채용 시 연 최대 ${(companyTypeCalc.totalAmount / 10000).toLocaleString()}만원`;
+                    break;
+                case 'multi-component':
+                    // 출산육아기 고용안정장려금 - 복수 구성요소
+                    if (calc['육아휴직지원금']) {
+                        const childcareCount = company.childcareWorkers || 1;
+                        // 육아휴직지원금 기본
+                        const baseSupport = calc['육아휴직지원금']['기본'];
+                        if (baseSupport) {
+                            totalAmount = baseSupport.totalAmount * childcareCount;
+                            details = `육아휴직 연 ${(baseSupport.totalAmount / 10000)}만원 × ${childcareCount}명`;
+                        } else {
+                            // 이전 구조 호환
+                            totalAmount = (calc['육아휴직지원금'].monthlyAmount || 300000) * 12 * childcareCount;
+                            details = `육아휴직 월 ${((calc['육아휴직지원금'].monthlyAmount || 300000) / 10000)}만원 × ${childcareCount}명`;
+                        }
+                    }
+                    break;
+                case 'per-employee-monthly-by-severity':
+                    // 장애인고용장려금 - 장애등급/성별별 차등
+                    const mildDisabledCount = company.disabledEmployees || 0;
+                    const severeDisabledCount = company.severeDisabledEmployees || 0;
+                    const totalDisabledCount = mildDisabledCount + severeDisabledCount;
+
+                    // 경증 평균: (40만 + 30만) / 2 = 35만원
+                    // 중증 평균: (60만 + 50만) / 2 = 55만원
+                    const mildAvg = calc['경증남성'] && calc['경증여성']
+                        ? (calc['경증남성'].monthlyAmount + calc['경증여성'].monthlyAmount) / 2
+                        : 350000;
+                    const severeAvg = calc['중증남성'] && calc['중증여성']
+                        ? (calc['중증남성'].monthlyAmount + calc['중증여성'].monthlyAmount) / 2
+                        : 550000;
+
+                    const mildDisabledAmount = mildAvg * 12 * mildDisabledCount;
+                    const severeDisabledAmount = severeAvg * 12 * severeDisabledCount;
+                    totalAmount = mildDisabledAmount + severeDisabledAmount;
+
+                    // 상세 내역 작성
+                    if (mildDisabledCount > 0 && severeDisabledCount > 0) {
+                        details = `경증 ${mildDisabledCount}명 × 월 ${(mildAvg / 10000)}만원 × 12개월 + 중증 ${severeDisabledCount}명 × 월 ${(severeAvg / 10000)}만원 × 12개월`;
+                    } else if (severeDisabledCount > 0) {
+                        details = `중증장애인 ${severeDisabledCount}명 × 월 ${(severeAvg / 10000)}만원 × 12개월`;
+                    } else {
+                        details = `경증장애인 ${mildDisabledCount}명 × 월 ${(mildAvg / 10000)}만원 × 12개월`;
+                    }
+                    break;
+                case 'monthly-based-on-wage-increase':
+                    // 정규직 전환 지원금
+                    const conversionCalc = calc['임금20만원이상인상'] || calc['그외'];
+                    totalAmount = conversionCalc.totalAmount * (company.nonRegularEmployees || 1);
+                    details = `비정규직 전환 ${company.nonRegularEmployees || 1}명 × ${(conversionCalc.totalAmount / 10000).toLocaleString()}만원`;
+                    break;
+                case 'monthly-jobseeker-support':
+                    // 구직자 지원 (국민취업지원제도, 장애인취업성공패키지 등)
+                    totalAmount = calc.totalAmount || 0;
+                    details = calc.description || '';
+                    break;
+                default:
+                    if (calc.totalAmount) {
+                        totalAmount = calc.totalAmount;
+                        details = calc.description || '';
+                    } else if (calc.monthlyAmount) {
+                        totalAmount = calc.monthlyAmount * (calc.maxMonths || 12);
+                        details = calc.description || '';
+                    }
+            }
+
+            return { subsidy, totalAmount, details };
+        }
+
+        function findOptimalCombination(calculations, allSubsidies) {
+            if (calculations.length === 0) return { combination: [], totalAmount: 0, excluded: [] };
+
+            // 금액이 큰 순으로 정렬
+            const sorted = [...calculations].sort((a, b) => b.totalAmount - a.totalAmount);
+
+            const combination = [];
+            const excluded = []; // 중복으로 제외된 지원금
+            let totalAmount = 0;
+            const usedExclusions = new Set();
+            const selectedIds = new Set();
+
+            for (const calc of sorted) {
+                const exclusions = calc.subsidy.mutuallyExclusive || [];
+
+                // 이미 선택된 지원금과 중복 체크
+                const conflictWith = exclusions.find(ex => selectedIds.has(ex));
+
+                if (conflictWith) {
+                    // 중복으로 제외됨 - 이유 기록
+                    const conflictSubsidy = allSubsidies.find(s => s.id === conflictWith);
+                    const selectedCalc = combination.find(c => c.subsidy.id === conflictWith);
+                    excluded.push({
+                        ...calc,
+                        excludeReason: `'${conflictSubsidy?.name || conflictWith}'과(와) 중복 수급 불가`,
+                        betterOption: conflictSubsidy?.name,
+                        betterAmount: selectedCalc?.totalAmount || 0,
+                        amountDiff: (selectedCalc?.totalAmount || 0) - calc.totalAmount
+                    });
+                } else if (usedExclusions.has(calc.subsidy.id)) {
+                    // 다른 지원금에 의해 제외됨
+                    const blockedBy = combination.find(c =>
+                        (c.subsidy.mutuallyExclusive || []).includes(calc.subsidy.id)
+                    );
+                    excluded.push({
+                        ...calc,
+                        excludeReason: `'${blockedBy?.subsidy.name}'과(와) 중복 수급 불가`,
+                        betterOption: blockedBy?.subsidy.name,
+                        betterAmount: blockedBy?.totalAmount || 0,
+                        amountDiff: (blockedBy?.totalAmount || 0) - calc.totalAmount
+                    });
+                } else {
+                    // 선택 가능
+                    combination.push(calc);
+                    totalAmount += calc.totalAmount;
+                    selectedIds.add(calc.subsidy.id);
+                    exclusions.forEach(ex => usedExclusions.add(ex));
+                }
+            }
+
+            return { combination, totalAmount, excluded };
+        }
+
+        function getVerificationBadge(status) {
+            if (status === 'confirmed2026') {
+                return '<span class="verification-badge badge-confirmed">✅ 2026년 확인</span>';
+            } else if (status === 'pending2026') {
+                return '<span class="verification-badge badge-pending">⚠️ 2025년 기준</span>';
+            }
+            return '';
+        }
+
+        function displayResults(results) {
+            document.getElementById('results').classList.remove('hidden');
+            document.getElementById('totalAmount').textContent = results.optimal.totalAmount.toLocaleString() + '원';
+            document.getElementById('eligibleCount').textContent = results.optimal.combination.length;
+
+            // 수급 가능 목록
+            const eligibleList = document.getElementById('eligibleList');
+            eligibleList.innerHTML = results.optimal.combination.map(item => `
+                <li class="subsidy-item eligible">
+                    <h4>
+                        ${item.subsidy.name}
+                        ${getVerificationBadge(item.subsidy.verificationStatus)}
+                    </h4>
+                    <p><strong>금액:</strong> ${item.totalAmount.toLocaleString()}원</p>
+                    <p><strong>산출:</strong> ${item.details}</p>
+                    ${item.subsidy.verificationSource ? `<p class="verification-source">📋 ${item.subsidy.verificationSource}</p>` : ''}
+                </li>
+            `).join('');
+
+            // 중복 수급 불가로 제외된 지원금 (더 좋은 대안 선택됨)
+            const excludedByConflict = results.excludedByConflict || [];
+            if (excludedByConflict.length > 0) {
+                const excludedHtml = excludedByConflict.map(item => `
+                    <li class="subsidy-item excluded-conflict" style="background: #fff3e0; border-left: 4px solid #ff9800;">
+                        <h4>
+                            ${item.subsidy.name}
+                            <span style="background: #ff9800; color: white; padding: 2px 8px; border-radius: 4px; font-size: 12px; margin-left: 8px;">중복 제외</span>
+                        </h4>
+                        <p><strong>예상 금액:</strong> ${item.totalAmount.toLocaleString()}원</p>
+                        <p style="color: #e65100;"><strong>⚠️ 제외 사유:</strong> ${item.excludeReason}</p>
+                        <p style="color: #2e7d32;"><strong>✅ 더 유리한 선택:</strong> '${item.betterOption}' (${item.betterAmount.toLocaleString()}원) - <strong>${item.amountDiff >= 0 ? '+' : ''}${item.amountDiff.toLocaleString()}원 더 많음</strong></p>
+                    </li>
+                `).join('');
+
+                eligibleList.innerHTML += `
+                    <li style="background: #fff8e1; padding: 15px; margin-top: 20px; border-radius: 8px; list-style: none;">
+                        <h4 style="color: #f57c00; margin: 0 0 10px 0;">🔄 중복 수급 불가 지원금 (더 유리한 대안 선택됨)</h4>
+                        <ul style="list-style: none; padding: 0; margin: 0;">
+                            ${excludedHtml}
+                        </ul>
+                    </li>
+                `;
+            }
+
+            // 수급 불가 목록
+            const notEligibleList = document.getElementById('notEligibleList');
+            notEligibleList.innerHTML = results.eligibility.notEligible.map(item => `
+                <li class="subsidy-item not-eligible">
+                    <h4>
+                        ${item.subsidy.name}
+                        ${getVerificationBadge(item.subsidy.verificationStatus)}
+                    </h4>
+                    <p><strong>미충족 사유:</strong> ${item.reasons.join(', ')}</p>
+                </li>
+            `).join('');
+
+            // 차트
+            renderChart(results.calculations);
+        }
+
+        function renderChart(calculations) {
+            const ctx = document.getElementById('comparisonChart').getContext('2d');
+            if (chart) chart.destroy();
+
+            chart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: calculations.slice(0, 6).map(c => c.subsidy.name.substring(0, 10) + '...'),
+                    datasets: [{
+                        label: '예상 지원금 (원)',
+                        data: calculations.slice(0, 6).map(c => c.totalAmount),
+                        backgroundColor: ['#667eea', '#764ba2', '#34a853', '#fbbc04', '#ea4335', '#4285f4']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { callback: v => (v / 10000).toLocaleString() + '만원' }
+                        }
+                    }
+                }
+            });
+        }
+
+        function exportExcel() {
+            if (!currentResults) return;
+
+            const wb = XLSX.utils.book_new();
+
+            // 기업 정보
+            const companySheet = [
+                ['2026년 고용지원금 분석 결과'],
+                [],
+                ['기업 정보'],
+                ['지역', currentResults.companyData.region],
+                ['지역유형', currentResults.companyData.regionType],
+                ['업종', currentResults.companyData.industry],
+                ['총 직원수', currentResults.companyData.totalEmployees],
+                ['청년(15~34세)', currentResults.companyData.youthEmployees],
+                ['중장년(50~59세)', currentResults.companyData.middleAgedEmployees],
+                ['고령자(60세+)', currentResults.companyData.seniorEmployees],
+                ['장애인', currentResults.companyData.disabledEmployees],
+                ['중증장애인', currentResults.companyData.severeDisabledEmployees],
+                ['육아기 근로자', currentResults.companyData.childcareWorkers],
+                ['비정규직', currentResults.companyData.nonRegularEmployees],
+            ];
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(companySheet), '기업정보');
+
+            // 수급 가능 지원금 (상세 정보 포함)
+            const eligibleSheet = [
+                ['수급 가능 지원금 상세'],
+                [],
+                ['지원금명', '예상 금액', '산출 내역', '필요서류', '신청방법', '문의처']
+            ];
+            currentResults.optimal.combination.forEach(item => {
+                const docs = item.subsidy.requiredDocuments ? item.subsidy.requiredDocuments.join(' / ') : '-';
+                const method = item.subsidy.applicationMethod || '-';
+                const contact = item.subsidy.contact || '-';
+                eligibleSheet.push([item.subsidy.name, item.totalAmount, item.details, docs, method, contact]);
+            });
+            eligibleSheet.push([], ['총 예상 수급액', currentResults.optimal.totalAmount, '', '', '', '']);
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(eligibleSheet), '수급가능지원금');
+
+            // 중복 수급 불가로 제외된 지원금
+            const excludedByConflict = currentResults.excludedByConflict || [];
+            if (excludedByConflict.length > 0) {
+                const conflictSheet = [
+                    ['🔄 중복 수급 불가 지원금 (더 유리한 대안 선택됨)'],
+                    [],
+                    ['지원금명', '예상 금액', '제외 사유', '더 유리한 선택', '금액 차이'],
+                ];
+                excludedByConflict.forEach(item => {
+                    conflictSheet.push([
+                        item.subsidy.name,
+                        item.totalAmount,
+                        item.excludeReason,
+                        `${item.betterOption} (${item.betterAmount.toLocaleString()}원)`,
+                        `+${item.amountDiff.toLocaleString()}원 더 많음`
+                    ]);
+                });
+                conflictSheet.push([]);
+                conflictSheet.push(['💡 안내: 위 지원금들은 다른 지원금과 동시 수급이 불가하여, 금액이 더 큰 지원금을 추천드렸습니다.']);
+                XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(conflictSheet), '중복제외지원금');
+            }
+
+            // 신청 절차 안내
+            const procedureSheet = [
+                ['📋 신청 절차 안내'],
+                [],
+                ['단계', '내용', '비고'],
+                ['1단계', '자격 요건 확인', '본 분석결과를 바탕으로 해당 지원금 수급 가능 여부 확인'],
+                ['2단계', '필요 서류 준비', '각 지원금별 필요서류 사전 준비 (아래 목록 참조)'],
+                ['3단계', '온라인/방문 신청', '고용24(www.work24.go.kr) 또는 관할 고용센터 방문'],
+                ['4단계', '심사 및 승인', '제출 서류 심사 (통상 2~4주 소요)'],
+                ['5단계', '지원금 지급', '승인 후 지정 계좌로 지급'],
+                [],
+                ['📞 주요 문의처'],
+                ['고용노동부 콜센터', '1350'],
+                ['한국장애인고용공단', '1588-1519'],
+                ['고용24 홈페이지', 'www.work24.go.kr'],
+                [],
+                ['⚠️ 공통 유의사항'],
+                ['1. 월평균 보수 124만원 미만 근로자는 대부분의 지원금에서 제외됩니다.'],
+                ['2. 사업주의 배우자, 직계 존비속은 지원 대상에서 제외됩니다.'],
+                ['3. 외국인 근로자는 F-2, F-5, F-6 비자 소지자만 지원 가능합니다.'],
+                ['4. 고용보험 가입이 필수입니다.'],
+                ['5. 본 분석결과는 참고용이며, 실제 수급 여부는 고용센터 심사를 통해 결정됩니다.'],
+            ];
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(procedureSheet), '신청절차안내');
+
+            // 지원금별 상세 필요서류
+            const docsSheet = [
+                ['📄 지원금별 필요서류 상세'],
+                [],
+            ];
+            currentResults.optimal.combination.forEach((item, idx) => {
+                docsSheet.push([`${idx + 1}. ${item.subsidy.name}`]);
+                docsSheet.push(['   신청방법:', item.subsidy.applicationMethod || '-']);
+                docsSheet.push(['   문의처:', item.subsidy.contact || '-']);
+                docsSheet.push(['   필요서류:']);
+                if (item.subsidy.requiredDocuments && item.subsidy.requiredDocuments.length > 0) {
+                    item.subsidy.requiredDocuments.forEach((doc, docIdx) => {
+                        docsSheet.push([`     ${docIdx + 1}. ${doc}`]);
+                    });
+                }
+                if (item.subsidy.notes) {
+                    docsSheet.push(['   참고사항:', item.subsidy.notes]);
+                }
+                docsSheet.push([]);
+            });
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(docsSheet), '필요서류상세');
+
+            // 수급 불가
+            const notEligibleSheet = [
+                ['수급 불가 지원금'],
+                [],
+                ['지원금명', '미충족 사유']
+            ];
+            currentResults.eligibility.notEligible.forEach(item => {
+                notEligibleSheet.push([item.subsidy.name, item.reasons.join(', ')]);
+            });
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(notEligibleSheet), '수급불가지원금');
+
+            XLSX.writeFile(wb, '고용지원금_분석결과.xlsx');
+        }
+
+        async function exportPdf() {
+            if (!currentResults) return;
+
+            const btn = document.getElementById('exportPdf');
+            const originalText = btn.textContent;
+            btn.textContent = '⏳ PDF 생성 중...';
+            btn.disabled = true;
+
+            try {
+                // PDF용 HTML 컨텐츠 생성
+                const pdfContainer = document.createElement('div');
+                pdfContainer.id = 'pdf-export-container';
+                pdfContainer.style.cssText = `
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 800px;
+                    background: white;
+                    padding: 40px;
+                    z-index: 10000;
+                    font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+                `;
+
+                const eligibleHtml = currentResults.optimal.combination.length > 0
+                    ? currentResults.optimal.combination.map((item, idx) => `
+                        <div style="background: #e8f5e9; padding: 15px; margin: 10px 0; border-radius: 8px; border-left: 4px solid #4caf50;">
+                            <div style="font-weight: bold; color: #2e7d32; margin-bottom: 8px;">${idx + 1}. ${item.subsidy.name}</div>
+                            <div style="color: #1565c0; font-size: 15px; margin-bottom: 5px;">💰 예상 금액: ${item.totalAmount.toLocaleString()}원</div>
+                            <div style="color: #666; font-size: 13px; margin-bottom: 8px;">📊 산출: ${item.details}</div>
+                            <div style="background: #fff; padding: 10px; border-radius: 6px; margin-top: 8px;">
+                                <div style="color: #333; font-size: 12px; margin-bottom: 5px;"><strong>📋 필요서류:</strong> ${item.subsidy.requiredDocuments ? item.subsidy.requiredDocuments.join(', ') : '-'}</div>
+                                <div style="color: #333; font-size: 12px; margin-bottom: 5px;"><strong>🏢 신청방법:</strong> ${item.subsidy.applicationMethod || '-'}</div>
+                                <div style="color: #333; font-size: 12px;"><strong>📞 문의처:</strong> ${item.subsidy.contact || '-'}</div>
+                            </div>
+                        </div>
+                    `).join('')
+                    : '<p style="color: #666; padding: 15px;">수급 가능한 지원금이 없습니다.</p>';
+
+                const notEligibleHtml = currentResults.eligibility.notEligible.map((item, idx) => `
+                    <div style="background: #ffebee; padding: 12px; margin: 8px 0; border-radius: 8px; border-left: 4px solid #f44336;">
+                        <div style="font-weight: bold; color: #c62828; margin-bottom: 5px;">${idx + 1}. ${item.subsidy.name}</div>
+                        <div style="color: #d32f2f; font-size: 12px;">미충족: ${item.reasons.join(', ')}</div>
+                    </div>
+                `).join('');
+
+                // 중복 제외 지원금 HTML
+                const excludedConflictHtml = (currentResults.excludedByConflict || []).length > 0
+                    ? (currentResults.excludedByConflict || []).map((item, idx) => `
+                        <div style="background: #fff3e0; padding: 15px; margin: 10px 0; border-radius: 8px; border-left: 4px solid #ff9800;">
+                            <div style="font-weight: bold; color: #e65100; margin-bottom: 8px;">${idx + 1}. ${item.subsidy.name} <span style="background: #ff9800; color: white; padding: 2px 8px; border-radius: 4px; font-size: 11px;">중복 제외</span></div>
+                            <div style="color: #666; font-size: 13px; margin-bottom: 5px;">💰 예상 금액: ${item.totalAmount.toLocaleString()}원</div>
+                            <div style="color: #e65100; font-size: 13px; margin-bottom: 5px;">⚠️ 제외 사유: ${item.excludeReason}</div>
+                            <div style="color: #2e7d32; font-size: 13px; font-weight: bold;">✅ 더 유리한 선택: '${item.betterOption}' (${item.betterAmount.toLocaleString()}원) - +${item.amountDiff.toLocaleString()}원 더 많음</div>
+                        </div>
+                    `).join('')
+                    : '';
+
+                pdfContainer.innerHTML = `
+                    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; margin: -40px -40px 30px -40px; text-align: center;">
+                        <h1 style="margin: 0; font-size: 28px;">2026년 고용지원금 분석 결과</h1>
+                        <p style="margin: 10px 0 0 0; opacity: 0.9;">Employment Subsidy Analysis Report</p>
+                    </div>
+
+                    <div style="background: #f8f9fa; padding: 20px; border-radius: 12px; margin-bottom: 25px;">
+                        <h2 style="color: #333; font-size: 18px; margin: 0 0 15px 0; padding-bottom: 10px; border-bottom: 2px solid #667eea;">📋 기업 정보</h2>
+                        <table style="width: 100%; border-collapse: collapse;">
+                            <tr><td style="padding: 8px 0; color: #666; width: 40%;">지역</td><td style="padding: 8px 0; font-weight: 500;">${currentResults.companyData.region} (${currentResults.companyData.regionType})</td></tr>
+                            <tr><td style="padding: 8px 0; color: #666;">업종</td><td style="padding: 8px 0; font-weight: 500;">${currentResults.companyData.industry}</td></tr>
+                            <tr><td style="padding: 8px 0; color: #666;">총 직원수</td><td style="padding: 8px 0; font-weight: 500;">${currentResults.companyData.totalEmployees}명</td></tr>
+                            <tr><td style="padding: 8px 0; color: #666;">청년 (15~34세)</td><td style="padding: 8px 0; font-weight: 500;">${currentResults.companyData.youthEmployees}명</td></tr>
+                            <tr><td style="padding: 8px 0; color: #666;">중장년 (50~59세)</td><td style="padding: 8px 0; font-weight: 500;">${currentResults.companyData.middleAgedEmployees}명</td></tr>
+                            <tr><td style="padding: 8px 0; color: #666;">고령자 (60세+)</td><td style="padding: 8px 0; font-weight: 500;">${currentResults.companyData.seniorEmployees}명</td></tr>
+                            <tr><td style="padding: 8px 0; color: #666;">장애인</td><td style="padding: 8px 0; font-weight: 500;">${currentResults.companyData.disabledEmployees}명</td></tr>
+                            <tr><td style="padding: 8px 0; color: #666;">중증장애인</td><td style="padding: 8px 0; font-weight: 500;">${currentResults.companyData.severeDisabledEmployees}명</td></tr>
+                            <tr><td style="padding: 8px 0; color: #666;">육아기 근로자</td><td style="padding: 8px 0; font-weight: 500;">${currentResults.companyData.childcareWorkers}명</td></tr>
+                        </table>
+                    </div>
+
+                    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; border-radius: 12px; text-align: center; margin-bottom: 25px;">
+                        <div style="font-size: 16px; opacity: 0.9;">총 예상 수급액</div>
+                        <div style="font-size: 36px; font-weight: bold; margin: 10px 0;">${currentResults.optimal.totalAmount.toLocaleString()}원</div>
+                        <div style="font-size: 14px; opacity: 0.8;">수급 가능 지원금 ${currentResults.optimal.combination.length}개</div>
+                    </div>
+
+                    <div style="margin-bottom: 25px;">
+                        <h2 style="color: #2e7d32; font-size: 18px; margin: 0 0 15px 0; padding: 10px 15px; background: #e8f5e9; border-radius: 8px;">✅ 수급 가능 지원금 (${currentResults.optimal.combination.length}개)</h2>
+                        ${eligibleHtml}
+                    </div>
+
+                    ${excludedConflictHtml ? `
+                    <div style="margin-bottom: 25px;">
+                        <h2 style="color: #e65100; font-size: 18px; margin: 0 0 15px 0; padding: 10px 15px; background: #fff3e0; border-radius: 8px;">🔄 중복 수급 불가 지원금 (더 유리한 대안 선택됨)</h2>
+                        ${excludedConflictHtml}
+                        <div style="background: #fff8e1; padding: 12px; border-radius: 8px; margin-top: 10px; font-size: 13px; color: #f57c00;">
+                            💡 <strong>안내:</strong> 위 지원금들은 다른 지원금과 동시 수급이 불가하여, 금액이 더 큰 지원금을 추천드렸습니다.
+                        </div>
+                    </div>
+                    ` : ''}
+
+                    <div style="margin-bottom: 25px;">
+                        <h2 style="color: #c62828; font-size: 18px; margin: 0 0 15px 0; padding: 10px 15px; background: #ffebee; border-radius: 8px;">❌ 수급 불가 지원금 (${currentResults.eligibility.notEligible.length}개)</h2>
+                        ${notEligibleHtml}
+                    </div>
+
+                    <div style="margin-bottom: 25px; page-break-before: always;">
+                        <h2 style="color: #1565c0; font-size: 18px; margin: 0 0 15px 0; padding: 10px 15px; background: #e3f2fd; border-radius: 8px;">📋 신청 절차 안내</h2>
+                        <div style="background: #fafafa; padding: 20px; border-radius: 8px;">
+                            <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+                                <tr style="background: #667eea; color: white;">
+                                    <td style="padding: 10px; border-radius: 4px 0 0 0; font-weight: bold;">단계</td>
+                                    <td style="padding: 10px; font-weight: bold;">내용</td>
+                                    <td style="padding: 10px; border-radius: 0 4px 0 0; font-weight: bold;">비고</td>
+                                </tr>
+                                <tr style="background: #fff;">
+                                    <td style="padding: 10px; border-bottom: 1px solid #eee; font-weight: bold; color: #667eea;">1단계</td>
+                                    <td style="padding: 10px; border-bottom: 1px solid #eee;">자격 요건 확인</td>
+                                    <td style="padding: 10px; border-bottom: 1px solid #eee; color: #666;">본 분석결과 참조</td>
+                                </tr>
+                                <tr style="background: #f9f9f9;">
+                                    <td style="padding: 10px; border-bottom: 1px solid #eee; font-weight: bold; color: #667eea;">2단계</td>
+                                    <td style="padding: 10px; border-bottom: 1px solid #eee;">필요 서류 준비</td>
+                                    <td style="padding: 10px; border-bottom: 1px solid #eee; color: #666;">각 지원금별 필요서류 확인</td>
+                                </tr>
+                                <tr style="background: #fff;">
+                                    <td style="padding: 10px; border-bottom: 1px solid #eee; font-weight: bold; color: #667eea;">3단계</td>
+                                    <td style="padding: 10px; border-bottom: 1px solid #eee;">온라인/방문 신청</td>
+                                    <td style="padding: 10px; border-bottom: 1px solid #eee; color: #666;">고용24 또는 고용센터</td>
+                                </tr>
+                                <tr style="background: #f9f9f9;">
+                                    <td style="padding: 10px; border-bottom: 1px solid #eee; font-weight: bold; color: #667eea;">4단계</td>
+                                    <td style="padding: 10px; border-bottom: 1px solid #eee;">심사 및 승인</td>
+                                    <td style="padding: 10px; border-bottom: 1px solid #eee; color: #666;">통상 2~4주 소요</td>
+                                </tr>
+                                <tr style="background: #fff;">
+                                    <td style="padding: 10px; font-weight: bold; color: #667eea;">5단계</td>
+                                    <td style="padding: 10px;">지원금 지급</td>
+                                    <td style="padding: 10px; color: #666;">승인 후 계좌 입금</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 25px;">
+                        <h2 style="color: #ff6f00; font-size: 18px; margin: 0 0 15px 0; padding: 10px 15px; background: #fff3e0; border-radius: 8px;">📞 주요 문의처</h2>
+                        <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                            <div style="flex: 1; min-width: 200px; background: #fff; padding: 15px; border-radius: 8px; border: 1px solid #eee;">
+                                <div style="font-weight: bold; color: #333; margin-bottom: 5px;">고용노동부 콜센터</div>
+                                <div style="color: #667eea; font-size: 20px; font-weight: bold;">1350</div>
+                            </div>
+                            <div style="flex: 1; min-width: 200px; background: #fff; padding: 15px; border-radius: 8px; border: 1px solid #eee;">
+                                <div style="font-weight: bold; color: #333; margin-bottom: 5px;">한국장애인고용공단</div>
+                                <div style="color: #667eea; font-size: 20px; font-weight: bold;">1588-1519</div>
+                            </div>
+                            <div style="flex: 1; min-width: 200px; background: #fff; padding: 15px; border-radius: 8px; border: 1px solid #eee;">
+                                <div style="font-weight: bold; color: #333; margin-bottom: 5px;">고용24 홈페이지</div>
+                                <div style="color: #667eea; font-size: 14px; font-weight: bold;">www.work24.go.kr</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 25px;">
+                        <h2 style="color: #d32f2f; font-size: 18px; margin: 0 0 15px 0; padding: 10px 15px; background: #ffebee; border-radius: 8px;">⚠️ 공통 유의사항</h2>
+                        <div style="background: #fff; padding: 15px; border-radius: 8px; border: 1px solid #ffcdd2;">
+                            <ul style="margin: 0; padding-left: 20px; color: #666; font-size: 13px; line-height: 1.8;">
+                                <li>월평균 보수 124만원 미만 근로자는 대부분의 지원금에서 제외됩니다.</li>
+                                <li>사업주의 배우자, 직계 존비속은 지원 대상에서 제외됩니다.</li>
+                                <li>외국인 근로자는 F-2, F-5, F-6 비자 소지자만 지원 가능합니다.</li>
+                                <li>고용보험 가입이 필수입니다.</li>
+                                <li>공공기관, 유흥주점업, 사행시설업 등은 지원 제외 업종입니다.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 30px; padding-top: 20px; border-top: 2px solid #eee; text-align: center; color: #999; font-size: 12px;">
+                        <p>생성일시: ${new Date().toLocaleDateString('ko-KR')} ${new Date().toLocaleTimeString('ko-KR')}</p>
+                        <p style="margin-top: 5px;">※ 본 결과는 참고용이며, 실제 수급 여부는 고용센터 심사를 통해 결정됩니다.</p>
+                    </div>
+                `;
+
+                document.body.appendChild(pdfContainer);
+
+                // HTML을 캔버스로 변환
+                const canvas = await html2canvas(pdfContainer, {
+                    scale: 2,
+                    useCORS: true,
+                    logging: false,
+                    backgroundColor: '#ffffff'
+                });
+
+                // 캔버스를 PDF로 변환
+                const { jsPDF } = window.jspdf;
+                const imgData = canvas.toDataURL('image/jpeg', 0.95);
+
+                const pdfWidth = 210; // A4 width in mm
+                const pdfHeight = 297; // A4 height in mm
+                const imgWidth = pdfWidth - 20; // margins
+                const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+                const doc = new jsPDF('p', 'mm', 'a4');
+
+                let heightLeft = imgHeight;
+                let position = 10;
+
+                // 첫 페이지
+                doc.addImage(imgData, 'JPEG', 10, position, imgWidth, imgHeight);
+                heightLeft -= (pdfHeight - 20);
+
+                // 추가 페이지가 필요한 경우
+                while (heightLeft > 0) {
+                    position = heightLeft - imgHeight + 10;
+                    doc.addPage();
+                    doc.addImage(imgData, 'JPEG', 10, position, imgWidth, imgHeight);
+                    heightLeft -= (pdfHeight - 20);
+                }
+
+                // PDF 저장
+                doc.save(`고용지원금_분석결과_${new Date().toISOString().slice(0,10)}.pdf`);
+
+                // 임시 컨테이너 제거
+                document.body.removeChild(pdfContainer);
+
+                btn.textContent = originalText;
+                btn.disabled = false;
+            } catch (error) {
+                console.error('PDF 생성 오류:', error);
+                // 임시 컨테이너가 있으면 제거
+                const container = document.getElementById('pdf-export-container');
+                if (container) document.body.removeChild(container);
+
+                btn.textContent = originalText;
+                btn.disabled = false;
+                alert('PDF 생성에 실패했습니다: ' + error.message);
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,488 @@
+{
+  "version": "2026.1.1",
+  "lastUpdated": "2026-01-11",
+  "description": "2026년 고용지원금 실제 데이터 (공식 운영지침 및 보도자료 기준)",
+  "dataSource": {
+    "primary": "2026년 청년일자리도약장려금 사업운영 지침 ('26.1월)",
+    "secondary": "고용노동부 보도참고자료 '2026년부터 이렇게 달라집니다' (2025.12.31 발표)"
+  },
+  "disclaimer": "⚠️ 이 시스템은 참고용입니다. 실제 신청 시 반드시 고용센터(1350) 또는 한국장애인고용공단(1588-1519) 확인이 필요합니다.",
+  "subsidies": [
+    {
+      "id": "youth-job-leap-2026",
+      "name": "청년일자리도약장려금",
+      "category": "청년고용",
+      "description": "청년(만 15-34세) 미취업자를 정규직 신규 채용 시 기업과 청년(비수도권만) 모두 지원 (2026년 공식 지침)",
+      "eligibility": {
+        "minEmployees": 5,
+        "maxEmployees": null,
+        "industryExclusions": [],
+        "requiredEmployeeTypes": [
+          "청년"
+        ],
+        "minEmploymentPeriod": 6,
+        "employeeAgeRange": {
+          "min": 15,
+          "max": 34
+        },
+        "targetCompanies": "5인 이상 우선지원대상기업 (일부 예외 인정)",
+        "employmentStatus": "미취업자 (고용보험 미가입자)",
+        "employmentType": "정규직 (무기계약직 포함)",
+        "wageLimit": "지원금은 지급 임금의 80% 초과 불가"
+      },
+      "calculation": {
+        "type": "regional-differentiated-2026",
+        "company": {
+          "amount": 7200000,
+          "monthlyAmount": 600000,
+          "period": "1년간",
+          "paymentSchedule": "6개월 최소 근속 후 첫 지급, 이후 3개월 단위 지급",
+          "description": "월 60만원 × 12개월, 임금의 80% 한도"
+        },
+        "youth": {
+          "수도권": {
+            "description": "지원 없음",
+            "totalAmount": 0
+          },
+          "비수도권일반": {
+            "milestones": [
+              {
+                "month": 6,
+                "amount": 1200000
+              },
+              {
+                "month": 12,
+                "amount": 1200000
+              },
+              {
+                "month": 18,
+                "amount": 1200000
+              },
+              {
+                "month": 24,
+                "amount": 1200000
+              }
+            ],
+            "totalAmount": 4800000,
+            "period": "2년간"
+          },
+          "우대지원지역": {
+            "milestones": [
+              {
+                "month": 6,
+                "amount": 1500000
+              },
+              {
+                "month": 12,
+                "amount": 1500000
+              },
+              {
+                "month": 18,
+                "amount": 1500000
+              },
+              {
+                "month": 24,
+                "amount": 1500000
+              }
+            ],
+            "totalAmount": 6000000,
+            "period": "2년간"
+          },
+          "특별지원지역": {
+            "milestones": [
+              {
+                "month": 6,
+                "amount": 1800000
+              },
+              {
+                "month": 12,
+                "amount": 1800000
+              },
+              {
+                "month": 18,
+                "amount": 1800000
+              },
+              {
+                "month": 24,
+                "amount": 1800000
+              }
+            ],
+            "totalAmount": 7200000,
+            "period": "2년간"
+          }
+        },
+        "totalMax": 14400000,
+        "description": "비수도권 청년은 최대 720만원 직접 수령"
+      },
+      "mutuallyExclusive": [],
+      "requiredDocuments": [
+        "고용보험 피보험자격 취득신고서",
+        "임금대장",
+        "근로계약서",
+        "사업장 소재지 증빙"
+      ],
+      "applicationPeriod": {
+        "start": "2026-01-01",
+        "end": "2026-12-31",
+        "budget": "2026년 신규지원 인원 105,000명 (수도권 55,000명, 비수도권 50,000명)"
+      },
+      "applicationMethod": "고용24(www.work24.go.kr) 또는 관할 고용센터",
+      "notes": "2026년 공식 운영지침: 비수도권 청년에게 장기근속인센티브 직접 지급. 수도권은 청년 직접 지원 없음. 인천 강화군·옹진군, 경기 가평군·연천군은 우대지원지역으로 분류. 다른 지원금과 월 60만원 이상 중복 시 지원 불가",
+      "contact": "고용노동부 044-202-7466",
+      "dataSource": "2026년 청년일자리도약장려금 사업운영 지침 ('26.1월)"
+    },
+    {
+      "id": "senior-continued-employment-2026",
+      "name": "고령자계속고용장려금",
+      "category": "고령자고용",
+      "description": "정년 도달 근로자 계속 고용 시 지원 (2026년 비수도권 우대)",
+      "eligibility": {
+        "minEmployees": 1,
+        "maxEmployees": null,
+        "industryExclusions": [],
+        "requiredEmployeeTypes": [
+          "고령자"
+        ],
+        "minEmploymentPeriod": 1,
+        "employeeAgeRange": {
+          "min": 60,
+          "max": null
+        },
+        "requiresRetirementAge": true,
+        "targetCompanies": "우선지원대상기업, 중견기업, 사회적기업"
+      },
+      "calculation": {
+        "type": "regional-differentiated-quarterly",
+        "수도권": {
+          "monthlyAmount": 300000,
+          "quarterlyAmount": 900000,
+          "maxQuarters": 12,
+          "maxYears": 3,
+          "totalAmount": 10800000
+        },
+        "비수도권": {
+          "monthlyAmount": 400000,
+          "quarterlyAmount": 1200000,
+          "maxQuarters": 12,
+          "maxYears": 3,
+          "totalAmount": 14400000,
+          "highlight": "2026년 신규 우대"
+        },
+        "employeeLimit": "전체 피보험자의 30% 이내, 최대 30명"
+      },
+      "mutuallyExclusive": [],
+      "requiredDocuments": [
+        "고용보험 피보험자격 취득신고서",
+        "주민등록등본",
+        "임금대장",
+        "근로계약서",
+        "계속고용제도 도입 증빙 (정년연장/폐지/재고용)"
+      ],
+      "applicationMethod": "관할 고용센터 방문 또는 온라인",
+      "notes": "2026년부터 비수도권 기업 월 40만원으로 인상 (기존 30만원). 정년 연장·폐지·재고용 중 선택",
+      "contact": "고용노동부 044-202-7460, 7463"
+    },
+    {
+      "id": "severe-disabled-employment-improvement-2026",
+      "name": "중증장애인고용개선장려금",
+      "category": "장애인고용",
+      "description": "50-100인 미만 사업장의 중증장애인 고용 증가 시 지원 (2026년 신설)",
+      "eligibility": {
+        "minEmployees": 50,
+        "maxEmployees": 99,
+        "industryExclusions": [],
+        "requiredEmployeeTypes": [
+          "장애인"
+        ],
+        "minEmploymentPeriod": 1,
+        "employeeAgeRange": null,
+        "requiresSevereDisabled": true,
+        "quotaRequirement": {
+          "rate": 0.031,
+          "description": "장애인 의무고용률 3.1% 미이행 사업장",
+          "condition": "중증장애인 고용을 늘린 경우"
+        }
+      },
+      "calculation": {
+        "type": "per-employee-monthly-by-gender",
+        "startDate": "2026-01-01",
+        "중증남성": {
+          "monthlyAmount": 350000,
+          "maxMonths": 12,
+          "totalAmount": 4200000
+        },
+        "중증여성": {
+          "monthlyAmount": 450000,
+          "maxMonths": 12,
+          "totalAmount": 5400000
+        },
+        "paymentRule": "지급단가와 월임금액의 60% 중 낮은 금액 지급",
+        "description": "증가한 중증장애인 근로자에 대해 최장 1년간"
+      },
+      "mutuallyExclusive": [],
+      "requiredDocuments": [
+        "장애인등록증 (중증)",
+        "고용보험 피보험자격 취득신고서",
+        "임금대장",
+        "근로계약서",
+        "장애인 의무고용률 미달성 증빙"
+      ],
+      "applicationMethod": "한국장애인고용공단 e신고 (www.esingo.or.kr)",
+      "notes": "2026년 신설. 50-100인 미만 사업장 전용. 국가/지자체/공공기관 제외",
+      "contact": "한국장애인고용공단 1588-1519"
+    },
+    {
+      "id": "regular-employment-conversion-2026",
+      "name": "정규직 전환 지원금",
+      "category": "고용안정",
+      "description": "비정규직을 정규직으로 전환한 기업 지원 (2026년 재개)",
+      "eligibility": {
+        "minEmployees": 1,
+        "maxEmployees": 29,
+        "industryExclusions": [],
+        "requiredEmployeeTypes": [],
+        "minEmploymentPeriod": 1,
+        "employeeAgeRange": null,
+        "targetWorkers": "6개월 이상 2년 이하 근속한 기간제·파견·사내하도급 근로자"
+      },
+      "calculation": {
+        "type": "monthly-based-on-wage-increase",
+        "임금20만원이상인상": {
+          "monthlyAmount": 600000,
+          "maxMonths": 12,
+          "totalAmount": 7200000,
+          "description": "정규직 전환 후 월 평균보수가 20만원 이상 인상된 경우"
+        },
+        "그외": {
+          "monthlyAmount": 400000,
+          "maxMonths": 12,
+          "totalAmount": 4800000,
+          "description": "기타 정규직 전환"
+        },
+        "minimumWage": 1240000,
+        "paymentPeriod": "정규직 전환 이행 후 1년 범위 내, 3개월 단위 지급"
+      },
+      "mutuallyExclusive": [],
+      "requiredDocuments": [
+        "근로계약서 (전환 전/후)",
+        "임금대장",
+        "고용보험 피보험자격 취득신고서",
+        "정규직 전환 증빙 서류"
+      ],
+      "applicationMethod": "관할 고용센터 또는 고용24",
+      "notes": "2026년 재개. 30인 미만 기업 대상. 정규직 전환 후 1개월 이상 고용유지 필수",
+      "contact": "고용노동부 기업일자리지원과"
+    },
+    {
+      "id": "job-shortage-incentive-2026",
+      "name": "일손부족일자리 동행인센티브",
+      "category": "고용촉진",
+      "description": "50세 이상 중장년이 제조·운수창고업 취업 시 지원 (2026년 신설)",
+      "eligibility": {
+        "minEmployees": null,
+        "maxEmployees": null,
+        "industryExclusions": [],
+        "requiredEmployeeTypes": [
+          "50세 이상 중장년"
+        ],
+        "minEmploymentPeriod": 6,
+        "employeeAgeRange": {
+          "min": 50,
+          "max": null
+        },
+        "prerequisite": "폴리텍 중장년 특화과정, 국가기간·전략산업직종 훈련, 중장년경력지원제 수료",
+        "targetIndustries": [
+          "제조업",
+          "운수창고업"
+        ]
+      },
+      "calculation": {
+        "type": "milestone-based",
+        "milestones": [
+          {
+            "month": 6,
+            "amount": 1800000,
+            "description": "6개월 근속"
+          },
+          {
+            "month": 12,
+            "amount": 1800000,
+            "description": "12개월 근속"
+          }
+        ],
+        "totalAmount": 3600000,
+        "targetPersons": 1000,
+        "description": "직업훈련·일경험 수료 후 일손부족 업종 취업한 50+ 중장년"
+      },
+      "mutuallyExclusive": [],
+      "requiredDocuments": [
+        "직업훈련 수료증",
+        "고용보험 피보험자격 취득신고서",
+        "근로계약서",
+        "임금대장"
+      ],
+      "applicationPeriod": {
+        "start": "2026-07-01",
+        "description": "2026년 7월 1일 이후 고용센터 및 고용24 통해 신청"
+      },
+      "applicationMethod": "고용센터 또는 고용24",
+      "notes": "2026년 신설. 50세 이상 중장년 재취업 지원. 6개월 근속일 기산 시점 기준",
+      "contact": "고용노동부 044-202-7460, 7462"
+    },
+    {
+      "id": "disabled-job-success-package-2026",
+      "name": "장애인취업성공패키지 구직촉진수당",
+      "category": "장애인고용",
+      "description": "저소득층 장애인 구직활동 지원 (2026년 인상)",
+      "eligibility": {
+        "minEmployees": null,
+        "maxEmployees": null,
+        "industryExclusions": [],
+        "requiredEmployeeTypes": [
+          "장애인"
+        ],
+        "minEmploymentPeriod": null,
+        "employeeAgeRange": null,
+        "incomeRequirement": "중위소득 60% 이하",
+        "forJobSeekers": true
+      },
+      "calculation": {
+        "type": "monthly-jobseeker-support",
+        "monthlyAmount": 600000,
+        "maxMonths": 6,
+        "totalAmount": 3600000,
+        "increase": 100000,
+        "description": "구직활동계획 수립 및 이행 시 지급 (전년 대비 10만원 인상)"
+      },
+      "mutuallyExclusive": [],
+      "requiredDocuments": [
+        "장애인등록증",
+        "소득·재산 신고서",
+        "구직활동 계획서"
+      ],
+      "applicationMethod": "한국장애인고용공단",
+      "notes": "2026년부터 월 60만원으로 인상 (기존 50만원). 중위소득 60% 이하 장애인 대상",
+      "contact": "한국장애인고용공단 1588-1519"
+    },
+    {
+      "id": "national-employment-support-2026",
+      "name": "국민취업지원제도 (I유형)",
+      "category": "취업지원",
+      "description": "저소득 구직자 대상 구직촉진수당 (2026년 인상)",
+      "eligibility": {
+        "minEmployees": null,
+        "maxEmployees": null,
+        "industryExclusions": [],
+        "requiredEmployeeTypes": [],
+        "minEmploymentPeriod": null,
+        "employeeAgeRange": null,
+        "incomeRequirement": true,
+        "forJobSeekers": true
+      },
+      "calculation": {
+        "type": "monthly-jobseeker-support",
+        "monthlyAmount": 600000,
+        "maxMonths": 6,
+        "totalAmount": 3600000,
+        "increase": 100000,
+        "description": "취업활동계획 성실 이행 시 지급 (2026년부터 월 10만원 인상)"
+      },
+      "mutuallyExclusive": [],
+      "requiredDocuments": [
+        "소득·재산 신고서",
+        "구직활동 계획서",
+        "취업지원 신청서"
+      ],
+      "applicationMethod": "고용24 (www.work24.go.kr)",
+      "notes": "2026년부터 월 60만원 (기존 50만원). 2025년 참여자도 2026년부터 60만원 적용",
+      "contact": "고용노동부 044-202-7193"
+    },
+    {
+      "id": "parental-10am-work-2026",
+      "name": "육아기 10시 출근제 지원",
+      "category": "일·가정양립",
+      "description": "육아기 자녀를 둔 근로자의 근로시간 단축 지원 (2026년 신설)",
+      "eligibility": {
+        "minEmployees": null,
+        "maxEmployees": null,
+        "industryExclusions": [],
+        "requiredEmployeeTypes": [],
+        "minEmploymentPeriod": null,
+        "employeeAgeRange": null,
+        "targetWorkers": "만 12세 이하 또는 초등학교 6학년 이하 자녀를 둔 근로자",
+        "targetCompanies": "중소·중견 기업"
+      },
+      "calculation": {
+        "type": "per-employee-monthly",
+        "monthlyAmount": 300000,
+        "condition": "임금 감소 없이 주당 15-35시간 또는 1일 출·퇴근 시간 이하로 단축",
+        "description": "단축근로자 1인당 월 30만원 지원"
+      },
+      "mutuallyExclusive": [],
+      "requiredDocuments": [
+        "근로시간 단축 신청서",
+        "자녀 증빙 서류",
+        "임금대장"
+      ],
+      "applicationPeriod": {
+        "start": "2026-01-01"
+      },
+      "applicationMethod": "관할 고용센터",
+      "notes": "2026년 신설. 기존 육아기 근로시간 단축제도와 별도. 임금 감소 없이 단축 가능",
+      "contact": "고용노동부 044-202-7473"
+    }
+  ],
+  "companySizeCategories": {
+    "5인미만": {
+      "min": 0,
+      "max": 4
+    },
+    "5인이상30인미만": {
+      "min": 5,
+      "max": 29
+    },
+    "30인이상50인미만": {
+      "min": 30,
+      "max": 49
+    },
+    "50인이상100인미만": {
+      "min": 50,
+      "max": 99
+    },
+    "100인이상": {
+      "min": 100,
+      "max": 999999
+    }
+  },
+  "industryTypes": [
+    "제조업",
+    "건설업",
+    "도소매업",
+    "숙박음식업",
+    "정보통신업",
+    "전문과학기술업",
+    "사업서비스업",
+    "교육서비스업",
+    "보건업 및 사회복지서비스업",
+    "운수창고업",
+    "기타"
+  ],
+  "minimumWage2026": {
+    "hourly": 10320,
+    "daily": 82560,
+    "monthly": 2156880,
+    "description": "2026년 적용 최저임금 (시간급 10,320원)"
+  },
+  "updateHistory": [
+    {
+      "version": "2026.1.1",
+      "date": "2026-01-11",
+      "changes": "청년일자리도약장려금 공식 운영지침 ('26.1월) 반영 - 상세 요건, 지급 일정, 예산 규모 업데이트"
+    },
+    {
+      "version": "2026.1.0",
+      "date": "2025-12-31",
+      "changes": "고용노동부 공식 보도자료 '2026년부터 이렇게 달라집니다' 기준으로 전면 교체"
+    }
+  ]
+}

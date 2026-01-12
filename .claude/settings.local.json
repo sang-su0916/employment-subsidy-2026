@@ -1,0 +1,26 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git init:*)",
+      "Bash(git add:*)",
+      "WebFetch(domain:subsidy-analyzer-2026-awh73vh7n-sang-su0916s-projects.vercel.app)",
+      "mcp__puppeteer__puppeteer_navigate",
+      "mcp__puppeteer__puppeteer_screenshot",
+      "Bash(cat:*)",
+      "Bash(vercel project:*)",
+      "Bash(vercel:*)",
+      "mcp__puppeteer__puppeteer_select",
+      "mcp__puppeteer__puppeteer_evaluate",
+      "mcp__puppeteer__puppeteer_click"
+    ]
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "obsidian-semantic",
+    "filesystem",
+    "fetch",
+    "puppeteer",
+    "_sequential-thinking",
+    "infranodus"
+  ]
+}
