@@ -1,7 +1,7 @@
 {
   "name": "employment-subsidy-optimizer",
   "productName": "2026 고용지원금 최적화 시스템",
-  "version": "1.0.0",
+  "version": "2026.1.8",
   "description": "기업에 가장 유리한 고용지원금을 자동으로 찾아주는 시스템",
   "main": "electron-main.js",
   "scripts": {
