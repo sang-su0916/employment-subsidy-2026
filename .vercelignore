@@ -1,0 +1,11 @@
+# Electron build files
+dist/
+node_modules/
+
+# Development files
+*.dmg
+*.exe
+*.app
+
+# Other large files
+*.asar
